@@ -1,23 +1,33 @@
 #!/usr/bin/env python3
 import requests
 import json
+base_url = "https://jsonplaceholder.typicode.com/posts"
 
+def http_get_request(url):
+    try:
+        return requests.get(url).json() # Attempt GET and parse JSON
+    except requests.exceptions.RequestException as e:
+        print(f"GET request failed: {e}")
+        return None # Graceful exit on error
+    
+def http_post_request(url, payload):
+    try:
+        return requests.post(url, json=payload).json() # Atempt POST and parse JSON
+    except requests.exceptions.RequestException as e:
+        print(f"POST request failed: {e}")
+        return None # Exit on error
 
-def fetch_posts(): # GET request data from the serever
-    response = requests.get("https://jsonplaceholder.typicode.com/posts")
-    return response.json() # return server response
+def http_put_request(url, payload):
+    try:
+        return requests.put(url, json=payload).json() # Attempt PUT and parse JSON
+    except requests.exceptions.RequestException as e:
+        return None # Exit on error
 
-def create_post(data): # POST send data to the server
-    response = requests.post("https://jsonplaceholder.typicode.com/posts", json=data)
-    return response.json() # return new-modified data from the server
-
-def update_post(post_id, data): # PUT update data on the server
-    response = requests.put(f"https://jsonplaceholder.typicode.com/posts/{post_id}", json=data)
-    return response.json() # return updated data from the server
-
-def delete_post(post_id): # DELETE delete data from the server
-    response = requests.delete(f"https://jsonplaceholder.typicode.com/posts/{post_id}")
-    return response.status_code # return status code after post is deleted
+def http_delete_request(url):
+    try:
+        return requests.delete(url).status_code # Attempt DELETE and return status code
+    except requests.exceptions.RequestException as e:
+        return None # Exit on error
 
 def save_posts_to_file(posts): # Save fetched posts to a file for offline viewing
     with open("posts.json", "w") as file:
@@ -26,9 +36,9 @@ def save_posts_to_file(posts): # Save fetched posts to a file for offline viewin
 def choose_menu_option():
     while True:
         try:
-            post_id = int(input("Choose meniu option: "))
+            post_id = int(input("Choose meniu option (1-5): "))
             if post_id <= 0 or post_id > 5:
-                raise ValueError("Choose a meniu option 1 to 5")
+                raise ValueError("Choose a meniu option (1-5)")
             return post_id
         except ValueError as e:
             print(f"Invalid input: {e}. Please try again.")
@@ -50,29 +60,47 @@ while True: # Run user's menu
     print("3. Update a Post")
     print("4. Delete a Post")
     print("5. Exit")
-    #choice = input("Choose an option: ")
     choice = choose_menu_option()
 
     if choice == 1:# GET
-        posts = fetch_posts()
-        save_posts_to_file(posts[:5]) # Save FETCHED 5 posts to a file
-        for post in posts[:5]: # Display first 5 posts
-            print(f"ID: {post['id']}, Title: {post['title']}")
+        posts = http_get_request(base_url)
+        if posts:
+            for post in posts[:5]: # Display first 5 posts
+                print(f"ID: {post['id']}, Title: {post['title']}")
+            save_posts_to_file(posts[:5]) # Save FETCHED 5 posts to a file
+        else:
+            print("Failed to fetch data")
+            break
     elif choice == 2:# POST
         title = str(input("Enter title: "))
         body = str(input("Enter body: "))
         data = {"title": title, "body": body, "userId": 1}
-        print("Post Created:", create_post(data))
+        response = http_post_request(base_url, data)
+        if response:
+            print("Post Created: ", response)
+        else:
+            print(f"Failed to create post. {response.status_code}")
+            break
     elif choice == 3: # PUT
-        #post_id = int(input("Enter post ID to update: "))
         post_id =  get_post_id()
         new_title = str(input("Enter new title: "))
-        data = {"title": new_title} 
-        print("Post Updated:", update_post(post_id, data))
+        data = {"title": new_title}
+        dynamic_url = f"https://jsonplaceholder.typicode.com/posts/{post_id}"  
+        response = http_put_request(dynamic_url, data)
+        if response:
+            print("Post Updated:", response)
+        else:
+            print("Failed to update post")
+            break
     elif choice == 4: # DELETE
-        #post_id = int(input("Enter post ID to delete: "))
         post_id = get_post_id()
-        print(f"\nPost ID {post_id} deleted \nDelete Status:", delete_post(post_id))
+        dynamic_url = f"https://jsonplaceholder.typicode.com/posts/{post_id}"
+        response = http_delete_request(dynamic_url)
+        if response:
+            print(f"\nPost ID {post_id} deleted \nDelete Status:", response)
+        else:
+            print("Failed to delete post.")
+            break
     elif choice == 5: # EXIT MENU
         print("Exiting Blog Manager. Goodbye!")
         break
