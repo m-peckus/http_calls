@@ -51,7 +51,7 @@ def get_post_id():
                 raise ValueError("Post ID must be an integer")
             return post_id
         except ValueError as e:
-            print(f"Invalid input: {e}. Please try again.")
+            print(f"Input error : {e}. Please try again.")
 
 while True: # Run user's menu
     print("\nBlog Manager Menu:")
@@ -67,7 +67,7 @@ while True: # Run user's menu
         if posts:
             for post in posts[:5]: # Display first 5 posts
                 print(f"ID: {post['id']}, Title: {post['title']}")
-            save_posts_to_file(posts[:5]) # Save FETCHED 5 posts to a file
+            save_posts_to_file(posts[:5]) # Save 5 posts to a file
         else:
             print("Failed to fetch data")
             break
@@ -90,7 +90,7 @@ while True: # Run user's menu
         if response:
             print("Post Updated:", response)
         else:
-            print("Failed to update post")
+            print("Failed to update post.\nPost ID out of range\nTry again")
             break
     elif choice == 4: # DELETE
         post_id = get_post_id()

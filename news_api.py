@@ -9,23 +9,38 @@ import os
 
 # Load environment variables from .env file
 load_dotenv()
+
 # Access API key from .env file
 API_KEY = os.getenv('API_KEY')
 
 # Init
 newsapi = NewsApiClient(API_KEY)
 
-# GET endpoint to News API
-base_url = f"https://newsapi.org/v2/everything?q=Apple&from=2025-01-01&sortBy=popularity&apiKey={API_KEY}"
+# various http GET endpoints to News API
+base_url = f"https://newsapi.org/v2/top-headlines?country=uk&apiKey={API_KEY}"
 
 url = "https://newsapi.org/v2/top-headlines"
+url_everything = "https://newsapi.org/v2/everything"
 
-params ={
-    'country': 'us', # Change the country to use a different endpoint
+# Change parameters for specific search results
+country_code = 'us'
+search_topic = 'tech'
+
+# Search news by country e.g, us
+params = {
+    'country': country_code, # Change the country to use a different endpoint
     'apiKey': API_KEY
 }
 
-response = requests.get(url, params=params)
+# Search news by topic e.g., tech
+search_params = {
+    'q': 'tech',
+    'language': 'en',
+    'apiKey': API_KEY
+
+}
+
+response = requests.get(url, params=search_params)
 
 # Check if request was successful
 if response.status_code == 200:
@@ -39,6 +54,9 @@ if response.status_code == 200:
         title = article['title']
         description = article['description']
         url = article['url']
-        print(f"{i}. {title}\n Description: {description}\n URL: {url}\n")
+        author = article['author']
+        date = article['publishedAt']
+        #print(f"{i}. {title}\n Description: {description}\n URL: {url}\n First published: {date}")
+        
 else:
     print("Error: Unable to fetch data")
